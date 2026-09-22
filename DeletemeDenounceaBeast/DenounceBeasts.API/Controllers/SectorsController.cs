@@ -15,9 +15,30 @@ namespace DenounceBeasts.API.Controllers
         };
 
         [HttpGet] // GET: api/sectors
-        public ActionResult<IEnumerable<Sector>> GetAll()
+        public ActionResult<IEnumerable<SectorDto>> GetAll()
         {
-            return Ok(_sectors);
+            var sectorDtos = _sectors.Select(s => new SectorDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                MunicipalityId = s.MunicipalityId,
+                IsActive = s.IsActive
+            }).ToList();
+
+            //var r = new List<SectorDto>();
+            //foreach (var sector in _sectors)
+            //{
+            //    r.Add(new SectorDto
+            //    {
+            //        Id = sector.Id,
+            //        Name = sector.Name,
+            //        MunicipalityId = sector.MunicipalityId,
+            //        IsActive = sector.IsActive
+            //    });
+
+            //}
+
+            return Ok(sectorDtos);
         }
 
         [HttpGet("{id}")] // GET: api/sectors/5
@@ -30,13 +51,13 @@ namespace DenounceBeasts.API.Controllers
         }
 
         [HttpPost] // POST: api/sectors
-        public ActionResult<Sector> Create(Sector sector)
+        public ActionResult<Sector> Create(SectorDto request)
         {
-            if (string.IsNullOrWhiteSpace(sector.Name))
+            if (string.IsNullOrWhiteSpace(request.Name))
             {
                 return BadRequest("Name of sector is required.");
             }
-            if (sector.MunicipalityId <= 0)
+            if (request.MunicipalityId <= 0)
             {
                 return BadRequest("MunicipalityId must be provided and positive.");
             }
@@ -44,6 +65,12 @@ namespace DenounceBeasts.API.Controllers
             //  pero omitiremos esa comprobación en esta versión inicial.)
 
             int newId = _sectors.Any() ? _sectors.Max(s => s.Id) + 1 : 1;
+
+            var sector = new Sector
+            {
+                Name = request.Name,
+                MunicipalityId = request.MunicipalityId
+            };
             sector.Id = newId;
             sector.IsActive = true; // siempre creamos como activo
             _sectors.Add(sector);
@@ -51,7 +78,7 @@ namespace DenounceBeasts.API.Controllers
         }
 
         [HttpPut("{id}")] // PUT: api/sectors/5
-        public IActionResult Update(int id, Sector sector)
+        public IActionResult Update(int id, SectorDto sector)
         {
             var existing = _sectors.FirstOrDefault(s => s.Id == id);
             if (existing == null)

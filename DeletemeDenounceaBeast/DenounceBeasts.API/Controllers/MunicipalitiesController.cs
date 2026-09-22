@@ -34,14 +34,19 @@ namespace DenounceBeasts.API.Controllers
         }
 
         [HttpPost] // POST: api/municipalities
-        public ActionResult<Municipality> Create(Municipality municipality)
+        public ActionResult<Municipality> Create(MunicipalityDto request)
         {
             // Validación manual adicional: nombre no vacío (alternativa a [Required]).
-            if (string.IsNullOrWhiteSpace(municipality.Name))
+            if (string.IsNullOrWhiteSpace(request.Name))
             {
                 return BadRequest("Name of municipality is required.");
             }
             int newId = _municipalities.Any() ? _municipalities.Max(m => m.Id) + 1 : 1;
+            var municipality = new Municipality
+            {
+                Name = request.Name,
+                PostalCode = request.PostalCode
+            };
             municipality.Id = newId;
             // Por lógica de negocio, podríamos decidir que todo nuevo municipio inicia activo.
             municipality.IsActive = true;
